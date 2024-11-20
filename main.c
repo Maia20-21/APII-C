@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-// senha 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -88,7 +86,7 @@ int ler_palavras(char palavras[MAX_PALAVRAS][MAX_TAM_PALAVRA]) {
 }
 
 
-// codificar 
+// Função para codificar em Base64
 // gcc codificar.c -o codificar -lssl -lcrypto
 char *base64_encode(const unsigned char *input, int length) {
     BIO *bmem, *b64;
@@ -119,29 +117,33 @@ char *codificar_senha(const char *senha) {
     return encoded;
 }
 
-int main() {
-    char senha[256];
-    printf("# Digite as palavras da sua senha: ");
-    fgets(senha, sizeof(senha), stdin);
-    senha[strcspn(senha, "\n")] = '\0';
+// Função para gerar os hashes de cada combinação e salvar em "senhas_codificadas.txt"
+void gerar_hash() {
+    FILE *entrada = fopen("lista.txt", "r");
+    FILE *saida = fopen("senhas_codificadas.txt", "w");
+    if (!entrada || !saida) {
+        fprintf(stderr, "Erro ao abrir os arquivos.\n");
+        return;
+    }
 
-    char *codificada = codificar_senha(senha);
-    printf("\n# Senha codificada: %s\n", codificada);
+    char palavra[MAX_TAM_PALAVRA];
+    while (pegar_palavra(entrada, palavra)) {
+        char *codificada = codificar_senha(palavra);
+        fprintf(saida, "%s\n", codificada); // Grava o hash codificado
+        free(codificada);
+    }
 
-    free(codificada);
-    return 0;
+    fclose(entrada);
+    fclose(saida);
 }
-
-
 
 int main() {
     char palavras[MAX_PALAVRAS][MAX_TAM_PALAVRA];
     int num_palavras = ler_palavras(palavras);
-    printf("%d\n", num_palavras);
-    num_palavras = 1;
 
     if (num_palavras > 0) {
-        gerar_combinacoes(palavras, num_palavras);
+        gerar_combinacoes(palavras, num_palavras); // Gera todas as combinações
+        gerar_hash(); // Gera os hashes de cada combinação
     } else {
         printf("Nenhuma palavra foi lida do arquivo.\n");
     }
